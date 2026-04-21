@@ -1,0 +1,16 @@
+{
+  "name": "resend-webhook",
+  "version": "1.0.50",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vc dev"
+  },
+  "dependencies": {
+    "elysia": "latest"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "discord-api-types": "^0.38.47"
+  },
+  "module": "src/index.js"
+}
