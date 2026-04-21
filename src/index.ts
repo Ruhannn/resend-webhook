@@ -4,37 +4,55 @@ import { Elysia, t } from "elysia";
 
 const app = new Elysia()
   .get("/", () => "❤️ I Love K")
+
   .post(
     "/webhook",
     async ({ body }) => {
       const { data } = body;
 
+      const attachments = data.attachments && data.attachments.length > 0 ? data.attachments.map((a) => `📎 ${a.filename} (${a.content_type})`).join("\n") : "No attachments";
+
       const webhookPayload: RESTPostAPIWebhookWithTokenJSONBody = {
-        username: "Resend Webhook",
-        avatar_url: "https://resend.com/static/favicons/favicon@180x180.png",
+        username: "Resend Inbox",
+        avatar_url:
+          "https://resend.com/static/favicons/favicon@180x180.png",
         embeds: [
           {
-            title: "Email Bounced",
-            description: "A sent email has bounced. Full details below:",
-            color: 0xFF0000,
+            title: "📩 New Email Received",
+            color: 0x00ff99,
             timestamp: new Date().toISOString(),
             fields: [
-              { name: "From", value: `\`${data.from}\``, inline: true },
-              { name: "To", value: `\`${data.to.join(", ")}\``, inline: true },
-              { name: "Subject", value: data.subject || "_No subject_", inline: false },
-              { name: "Bounce Type", value: `\`${data.bounce.type} - ${data.bounce.subType}\``, inline: true },
-              { name: "Bounce Message", value: `\`\`\`${data.bounce.message}\`\`\``, inline: false },
-              { name: "Email ID", value: `\`${data.email_id}\``, inline: true },
-              { name: "Broadcast ID", value: `\`${data.broadcast_id}\``, inline: true },
-              { name: "Template ID", value: `\`${data.template_id}\``, inline: true },
-              { name: "Category", value: data.tags?.category || "_None_", inline: true },
+              {
+                name: "From",
+                value: `\`${data.from}\``,
+                inline: true,
+              },
+              {
+                name: "To",
+                value: `\`${data.to.join(", ")}\``,
+                inline: true,
+              },
+              {
+                name: "Subject",
+                value: data.subject || "_No subject_",
+                inline: false,
+              },
+              {
+                name: "Message ID",
+                value: `\`${data.message_id}\``,
+                inline: false,
+              },
+              {
+                name: "Attachments",
+                value: attachments,
+                inline: false,
+              },
             ],
           },
         ],
       };
 
       try {
-
         await fetch(Bun.env.DISCORD_WEBHOOK_URL!, {
           method: "POST",
           headers: {
@@ -43,45 +61,39 @@ const app = new Elysia()
           body: JSON.stringify(webhookPayload),
         });
 
-        return {
-          success: true,
-          message: `Bounce processed and sent to Discord for ${data.from}`,
-        };
-
+        return { success: true };
       } catch (e) {
         console.error(e);
-
-        return {
-          success: false,
-          message: `Failed to send webhook to Discord`,
-        };
+        return { success: false };
       }
     },
     {
       body: t.Object({
-        type: t.Literal("email.bounced"),
-        created_at: t.Date(),
+        type: t.Literal("email.received"),
+        created_at: t.String(),
         data: t.Object({
-          broadcast_id: t.String(),
-          created_at: t.Date(),
           email_id: t.String(),
+          created_at: t.String(),
           from: t.String(),
           to: t.Array(t.String()),
-          subject: t.String(),
-          template_id: t.String(),
-          bounce: t.Object({
-            message: t.String(),
-            subType: t.String(),
-            type: t.String(),
-          }),
-          tags: t.Object({
-            category: t.String(),
-          }),
+          subject: t.Optional(t.String()),
+          message_id: t.String(),
+          attachments: t.Optional(
+            t.Array(
+              t.Object({
+                id: t.String(),
+                filename: t.String(),
+                content_type: t.String(),
+                content_disposition: t.Optional(t.String()),
+                content_id: t.Optional(t.String()),
+              })
+            )
+          ),
         }),
       }),
     }
-  )
+  );
 
-console.log("Love K is running at http://localhost:3000");
+console.log("Love k at http://localhost:3000");
 
 export default app;
