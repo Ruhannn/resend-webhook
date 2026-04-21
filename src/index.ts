@@ -77,20 +77,10 @@ const app = new Elysia()
           from: t.String(),
           to: t.Array(t.String()),
           subject: t.Optional(t.String()),
-          message_id: t.String(),
-          attachments: t.Optional(
-            t.Array(
-              t.Object({
-                id: t.String(),
-                filename: t.String(),
-                content_type: t.String(),
-                content_disposition: t.Optional(t.String()),
-                content_id: t.Optional(t.String()),
-              })
-            )
-          ),
+          message_id: t.Optional(t.String()),
+          attachments: t.Optional(t.Array(t.Any())),
         }),
-      }),
+      })
     }
   );
 
