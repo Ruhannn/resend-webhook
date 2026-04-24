@@ -51,14 +51,18 @@ const app = new Elysia()
       //     },
       //   ],
       // };
+      console.log(body);
 
+      const a: RESTPostAPIWebhookWithTokenJSONBody = {
+        content: JSON.stringify(body),
+      }
       try {
         await fetch(Bun.env.DISCORD_WEBHOOK_URL!, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(body),
+          body: JSON.stringify(a),
         });
 
         return { success: true };
